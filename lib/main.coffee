@@ -31,6 +31,10 @@ module.exports =
       type: 'boolean'
       default: true
       order: 20
+    openPreviewInNewWindow:
+      type: 'boolean'
+      default: true
+      order: 25
     grammars:
       type: 'array'
       default: [
@@ -196,13 +200,20 @@ module.exports =
   addPreviewForEditor: (editor) ->
     uri = @uriForEditor(editor)
     previousActivePane = atom.workspace.getActivePane()
-    options =
-      searchAllPanes: true
-    if atom.config.get('markdown-preview-plus.openPreviewInSplitPane')
-      options.split = 'right'
-    atom.workspace.open(uri, options).done (markdownPreviewView) ->
-      if isMarkdownPreviewView(markdownPreviewView)
-        previousActivePane.activate()
+    unless atom.config.get('markdown-preview-plus.openPreviewInNewWindow')
+      options =
+        searchAllPanes: true
+      if atom.config.get('markdown-preview-plus.openPreviewInSplitPane')
+        options.split = 'right'
+      atom.workspace.open(uri, options).done (markdownPreviewView) ->
+        if isMarkdownPreviewView(markdownPreviewView)
+          previousActivePane.activate()
+    else
+      filePath = "markdown-preview-plus://#{editor.getPath()}"
+      params =
+        pathsToOpen: filePath
+        newWindow: true
+      atom.open(params)
 
   previewFile: ({target}) ->
     filePath = target.dataset.path
